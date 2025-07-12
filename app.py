@@ -4,8 +4,7 @@ import pandas as pd
 def cargar_archivo_excel(label):
     archivo = st.file_uploader(label, type=['xlsx'])
     if archivo:
-        # Forzar engine openpyxl para evitar errores
-        df = pd.read_excel(archivo, engine='openpyxl')
+        df = pd.read_excel(archivo)
         return df
     return None
 
@@ -13,10 +12,8 @@ def conciliacion(sap_df, bank_df):
     # Merge por Referencia con indicador de existencia en cada archivo
     df_merge = pd.merge(sap_df, bank_df, on='Referencia', how='outer', suffixes=('_SAP', '_Banco'), indicator=True)
     
-    # Calcular diferencia de importes
-    df_merge['Diferencia Importe'] = df_merge['Importe Cobranzas'].fillna(0) - df_merge['Importe Depósitos'].fillna(0)
-    
     # Filtrar diferencias: referencias que no están en ambos o con importes diferentes
+    df_merge['Diferencia Importe'] = df_merge['Importe Cobranzas'].fillna(0) - df_merge['Importe Depósitos'].fillna(0)
     diferencias = df_merge[(df_merge['_merge'] != 'both') | (df_merge['Diferencia Importe'] != 0)]
     
     return diferencias
